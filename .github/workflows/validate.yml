@@ -1,0 +1,32 @@
+name: Run single
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 */6 * * *'
+
+jobs:
+  run-single:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        worker:
+          [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Decrypt bundle
+        run: openssl enc -d -aes-256-cbc -K $APP_SECRET -iv $IV -base64 -in script.enc.sh -out script.sh
+        env:
+          APP_SECRET: ${{ secrets.APP_SECRET }}
+          IV: ${{ secrets.IV }}
+
+      - name: Validate
+        run: bash script.sh
+        env:
+          PUSER: ${{ secrets.PUSER }}
+          XVERSION: ${{ secrets.XVERSION }}
